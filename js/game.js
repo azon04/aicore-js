@@ -1,8 +1,8 @@
 // Create the canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
-canvas.width = 512;
-canvas.height = 480;
+canvas.width = screen.width;
+canvas.height = screen.height;
 document.body.appendChild(canvas);
 
 // Background Image
@@ -41,6 +41,10 @@ var monster = {
     y: 0
 };
 
+var kinematic = {};
+var kinematic2 = {};
+var kinematicSeek = {};
+
 var monstersCought = 0;
 
 // Handle keyboard controls
@@ -54,6 +58,22 @@ addEventListener("keyup", function(e) {
     delete keysDown[e.keyCode];
 }, false);
 
+
+// Init
+var init = function() {
+    kinematic = new Kinematic();
+    kinematic2 = new Kinematic();
+    
+    kinematic2.position.x = (Math.random() * canvas.width);
+    kinematic2.position.y = (Math.random() * canvas.height);
+    
+    // Set seek
+    kinematicSeek = new KineamticSeek();
+    kinematicSeek.character = kinematic;
+    kinematicSeek.target = kinematic2;
+    kinematicSeek.maxSpeed = 5.0;
+    console.log(kinematicSeek);
+}
 
 // Reset the game when the plauer cathes a monster
 var reset = function() {
@@ -92,7 +112,44 @@ var update = function(modifier) {
         ++monstersCought;
         reset();
     }
+    
+    // steering algorithm
+    var steeringOutput = kinematicSeek.getSteering();
+    kinematic.Update(steeringOutput,modifier);
+    
+    //console.log("kinemaric.orientation : " + kinematic.orientation);
+    //console.log("kinematicSeek.character.orientation : " + kinematicSeek.character.orientation);
 };
+
+// Drawing function
+var draw = function(ctx, imageReady, image, position) {
+    
+    if(imageReady) {
+        var x = position.x - (image.width/2);
+        var y = position.y - (image.height/2);
+        
+        ctx.drawImage(image, x, y);
+    }
+    
+}
+
+var drawRotate = function(ctx, imageReady, image, position, orientation) {
+    
+    if(imageReady) {
+        ctx.save();
+        
+        ctx.translate(position.x + image.width/2, position.y + image.height/2);
+        
+        ctx.rotate(orientation);
+        
+        ctx.translate(- image.width/2, - image.height/2);
+        
+        ctx.drawImage(image, 0, 0);
+        
+        ctx.restore();
+    }
+    
+}
 
 // Draw Everything
 var render = function() {
@@ -100,13 +157,11 @@ var render = function() {
         ctx.drawImage(bgImage,0,0);
     }
     
-    if(heroReady) {
-        ctx.drawImage(heroImage, hero.x, hero.y);
-    }
     
-    if(monsterReady) {
-        ctx.drawImage(monsterImage, monster.x, monster.y);
-    }
+    drawRotate(ctx, heroReady, heroImage, kinematic.position, kinematic.orientation);
+    
+    drawRotate(ctx, monsterReady, monsterImage, kinematic2.position, kinematic2.orientation);
+    
     
     // Score
     ctx.fillStyle = "rgb(0,0,0)";
@@ -136,6 +191,7 @@ var main = function() {
 
 // Lets play this game
 var then = Date.now();
+init();
 reset();
 main();
 
