@@ -1,25 +1,9 @@
 // Create the canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
-canvas.width = screen.width;
-canvas.height = screen.height;
+canvas.width = 800;
+canvas.height = 600;
 document.body.appendChild(canvas);
-
-// Background Image
-var bgReady = false;
-var bgImage = new Image();
-bgImage.onload = function() {
-    bgReady = true;
-};
-bgImage.src = "images/background.png";
-
-// Hero Image
-var heroReady = false;
-var heroImage = new Image();
-heroImage.onload = function() {
-    heroReady = true;
-};
-heroImage.src = "images/hero.png";
 
 // Monster Image
 var monsterReady = false;
@@ -29,23 +13,12 @@ monsterImage.onload = function() {
 };
 monsterImage.src = "images/monster.png";
 
-// Game Objects
-var hero = {
-    speed: 256,
-    x : 0,
-    y : 0
-};
-
-var monster = {
-    x: 0,
-    y: 0
-};
 
 var kinematic = {};
 var kinematic2 = {};
 var kinematicSeek = {};
-
-var monstersCought = 0;
+var kinematicFlee = {};
+var kinematicWandering = {};
 
 // Handle keyboard controls
 var keysDown = {};
@@ -68,57 +41,54 @@ var init = function() {
     kinematic2.position.y = (Math.random() * canvas.height);
     
     // Set seek
-    kinematicSeek = new KineamticSeek();
+    kinematicSeek = new KinematicSeek();
     kinematicSeek.character = kinematic;
     kinematicSeek.target = kinematic2;
-    kinematicSeek.maxSpeed = 5.0;
-    console.log(kinematicSeek);
+    kinematicSeek.maxSpeed = 40.0;
+    
+    // Set flee
+    kinematicFlee = new KinematicFlee();
+    kinematicFlee.character = kinematic2;
+    kinematicFlee.target = kinematic;
+    kinematicFlee.maxSpeed = 40.0;
+    
+    // Set Wandering
+    kinematicWandering = new KinematicWandering();
+    kinematicWandering.character = kinematic2;
+    kinematicWandering.maxSpeed = 40.0;
 }
 
-// Reset the game when the plauer cathes a monster
-var reset = function() {
-    hero.x = canvas.width / 2;
-    hero.y = canvas.height / 2;
+function clipPosition(obj) {
+    obj.position.x = obj.position.x % canvas.width;
+    obj.position.y = obj.position.y % canvas.height;
     
-    monster.x = 32 + (Math.random() * canvas.width - 64);
-    monster.y = 32 + (Math.random() * canvas.height - 64);
-};
+    if(obj.position.x < 0) 
+    {
+        obj.position.x = canvas.width;
+    }
+    
+    if(obj.position.y < 0) 
+    {
+        obj.position.y = canvas.height;
+    }
+}
 
 // Update Game Objects
 var update = function(modifier) {
-    if(38 in keysDown) {
-        hero.y -= hero.speed * modifier;
-    }
-    
-    if(40 in keysDown) {
-        hero.y += hero.speed * modifier;
-    }
-    
-    if(37 in keysDown) {
-        hero.x -= hero.speed * modifier;
-    }
-    
-    if(39 in keysDown) {
-        hero.x += hero.speed * modifier;
-    }
-    
-    // Are they touching
-    if(hero.x <= (monster.x + 32)
-        && monster.x <= (hero.x + 32)
-       && hero.y <= (monster.y + 32)
-       && monster.y <= (hero.y + 32)
-      )
-    {
-        ++monstersCought;
-        reset();
-    }
     
     // steering algorithm
     var steeringOutput = kinematicSeek.getSteering();
     kinematic.Update(steeringOutput,modifier);
     
-    //console.log("kinemaric.orientation : " + kinematic.orientation);
-    //console.log("kinematicSeek.character.orientation : " + kinematicSeek.character.orientation);
+    steeringOutput = kinematicWandering.getSteering();
+    kinematic2.Update(steeringOutput,modifier);
+    
+    // clip the position
+    clipPosition(kinematic);
+    clipPosition(kinematic2);
+    
+    
+    
 };
 
 // Drawing function
@@ -151,24 +121,50 @@ var drawRotate = function(ctx, imageReady, image, position, orientation) {
     
 }
 
+var drawKinematic = function(ctx, color, position, orientation) {
+    
+    ctx.save();
+
+    ctx.translate(position.x + 8, position.y + 8);
+
+    ctx.rotate(orientation);
+
+    //ctx.translate(- 8, - 8);
+
+    ctx.fillStyle = color;
+
+    var path = new Path2D();
+    path.moveTo(8,0);
+    path.lineTo(0,32);
+    path.lineTo(-8,0);
+    ctx.fill(path);
+    
+    var circle = new Path2D();
+    circle.arc(0,0, 16, 0, Math.PI * 2);
+    ctx.fill(circle);
+
+    ctx.restore();
+    
+}
+
 // Draw Everything
 var render = function() {
-    if(bgReady) {
-        ctx.drawImage(bgImage,0,0);
-    }
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0, canvas.width, canvas.height);
     
+    drawKinematic(ctx, "#ff0000", kinematic.position, kinematic.orientation);
     
-    drawRotate(ctx, heroReady, heroImage, kinematic.position, kinematic.orientation);
-    
-    drawRotate(ctx, monsterReady, monsterImage, kinematic2.position, kinematic2.orientation);
-    
+    drawKinematic(ctx, "#00ff00", kinematic2.position, kinematic2.orientation);
     
     // Score
-    ctx.fillStyle = "rgb(0,0,0)";
-    ctx.font = "24px Helvetica";
+    ctx.fillStyle = "rgb(255,0,0)";
+    ctx.font = "12px Helvetica";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("Monsters caught: " + monstersCought, 32, 32);
+    ctx.fillText("Kinematic1 Seek", 32, 32);
+    
+    ctx.fillStyle = "rgb(0,255,0)";
+    ctx.fillText("Kinematic2 Wandering", 600, 32);
 }
 
 // Cross-browser support for requestAnimationFrame
@@ -192,6 +188,5 @@ var main = function() {
 // Lets play this game
 var then = Date.now();
 init();
-reset();
 main();
 
