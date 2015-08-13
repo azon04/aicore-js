@@ -1,4 +1,3 @@
-
 function KinematicSeek() {
     // Hold data for the character and target
     this.character = {};
@@ -69,6 +68,47 @@ function KinematicWandering() {
         steeringOutput.linear.y = this.maxSpeed * Math.cos(this.character.orientation);
         
         steeringOutput.angular = (Math.random() - Math.random()) * this.maxRotation ;
+        
+        // Output steering
+        return steeringOutput;
+    };
+}
+
+function KinematicArrive() {
+    // Hold data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Maximum Speed the character can travel
+    this.maxSpeed = 0.0;
+    
+    // Hold the statisfaction radius
+    this.radius = 0.0;
+    
+    // Hold the time to target constant
+    this.timeToTarget = 0.25;
+    
+    this.getSteering = function() {
+        
+        var steeringOutput = new SteeringOutput();
+        
+        steeringOutput.linear.x = this.target.position.x - this.character.position.x;
+        steeringOutput.linear.y = this.target.position.y - this.character.position.y;
+        
+        if(steeringOutput.linear.length() < this.radius) {
+            return new SteeringOutput();
+        }
+        
+        steeringOutput.linear.x /= this.timeToTarget;
+        steeringOutput.linear.y /= this.timeToTarget;
+        
+        if(steeringOutput.linear.length() > this.maxSpeed) {
+            steeringOutput.linear.normalize();
+            steeringOutput.linear.x *= this.maxSpeed;
+            steeringOutput.linear.y *= this.maxSpeed;
+        }
+        
+        this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
         
         // Output steering
         return steeringOutput;

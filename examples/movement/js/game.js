@@ -60,6 +60,14 @@ var init = function() {
     kinematicWandering.maxSpeed = 40.0;
     kinematicMovements[2] = kinematicWandering;
     
+    // Set Arrive
+    var kinematicArrive = new KinematicArrive();
+    kinematicArrive.character = kinematic;
+    kinematicArrive.target = kinematic2;
+    kinematicArrive.maxSpeed = 40.0;
+    kinematicArrive.radius = 32.0;
+    kinematic2Movements[3] = kinematicArrive;
+    
     // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
     kinematic2.position.y = (Math.random() * canvas.height);
@@ -83,6 +91,14 @@ var init = function() {
     kinematic2Wandering.character = kinematic2;
     kinematic2Wandering.maxSpeed = 40.0;
     kinematic2Movements[2] = kinematic2Wandering;
+    
+    // Set Arrive
+    var kinematic2Arrive = new KinematicArrive();
+    kinematic2Arrive.character = kinematic2;
+    kinematic2Arrive.target = kinematic;
+    kinematic2Arrive.maxSpeed = 40.0;
+    kinematic2Arrive.radius = 32.0;
+    kinematic2Movements[3] = kinematic2Arrive;
     
 }
 
@@ -117,6 +133,10 @@ var update = function(modifier) {
         selectedMovement = 2;
     }
     
+    if(82 in keysDown) { // r
+        selectedMovement = 3;
+    }
+    
     if(65 in keysDown) { // a
         selectedMovement2 = 0;
     }
@@ -127,6 +147,10 @@ var update = function(modifier) {
     
     if(68 in keysDown) { // d
         selectedMovement2 = 2;
+    }
+    
+    if(70 in keysDown) { // f
+        selectedMovement2 = 3;
     }
 
     // steering algorithm
@@ -225,10 +249,14 @@ var render = function() {
         case 2:
             ctx.fillText("Kinematic1 Wandering", 32, 32);
             break;
+        case 3:
+            ctx.fillText("Kinematic1 Arrive", 32, 32);
+            break;
     }
     ctx.fillText("'q' for Seek", 32, 48);
     ctx.fillText("'w' for Flee", 32, 64);
     ctx.fillText("'e' for Wandering", 32, 80);
+    ctx.fillText("'r' for Arrive", 32, 96)
     
     ctx.fillStyle = "rgb(0,255,0)";
     switch(selectedMovement2) {
@@ -241,10 +269,14 @@ var render = function() {
         case 2:
             ctx.fillText("Kinematic2 Wandering", 600, 32);
             break;
+        case 3:
+            ctx.fillText("Kinematic2 Arrive", 600, 32);
+            break;
     }
     ctx.fillText("'a' for Seek", 600, 48);
     ctx.fillText("'s' for Flee", 600, 64);
     ctx.fillText("'d' for Wandering", 600, 80);
+    ctx.fillText("'f' for Arrive", 600, 96);
     
 }
 
