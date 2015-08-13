@@ -15,10 +15,12 @@ monsterImage.src = "images/monster.png";
 
 
 var kinematic = {};
+var kinematicMovements = [];
+var selectedMovement = 0;
+
 var kinematic2 = {};
-var kinematicSeek = {};
-var kinematicFlee = {};
-var kinematicWandering = {};
+var kinematic2Movements = [];
+var selectedMovement2 = 0;
 
 // Handle keyboard controls
 var keysDown = {};
@@ -37,25 +39,51 @@ var init = function() {
     kinematic = new Kinematic();
     kinematic2 = new Kinematic();
     
+    
+    // Set seek
+    var kinematicSeek = new KinematicSeek();
+    kinematicSeek.character = kinematic;
+    kinematicSeek.target = kinematic2;
+    kinematicSeek.maxSpeed = 40.0;
+    kinematicMovements[0] = kinematicSeek;
+    
+    // Set flee
+    var kinematicFlee = new KinematicFlee();
+    kinematicFlee.character = kinematic;
+    kinematicFlee.target = kinematic2;
+    kinematicFlee.maxSpeed = 40.0;
+    kinematicMovements[1] = kinematicFlee;
+    
+    // Set Wandering
+    var kinematicWandering = new KinematicWandering();
+    kinematicWandering.character = kinematic;
+    kinematicWandering.maxSpeed = 40.0;
+    kinematicMovements[2] = kinematicWandering;
+    
+    // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
     kinematic2.position.y = (Math.random() * canvas.height);
     
     // Set seek
-    kinematicSeek = new KinematicSeek();
-    kinematicSeek.character = kinematic;
-    kinematicSeek.target = kinematic2;
-    kinematicSeek.maxSpeed = 40.0;
+    var kinematic2Seek = new KinematicSeek();
+    kinematic2Seek.character = kinematic2;
+    kinematic2Seek.target = kinematic;
+    kinematic2Seek.maxSpeed = 40.0;
+    kinematic2Movements[0] = kinematic2Seek;
     
     // Set flee
-    kinematicFlee = new KinematicFlee();
-    kinematicFlee.character = kinematic2;
-    kinematicFlee.target = kinematic;
-    kinematicFlee.maxSpeed = 40.0;
+    var kinematic2Flee = new KinematicFlee();
+    kinematic2Flee.character = kinematic2;
+    kinematic2Flee.target = kinematic;
+    kinematic2Flee.maxSpeed = 40.0;
+    kinematic2Movements[1] = kinematic2Flee;
     
     // Set Wandering
-    kinematicWandering = new KinematicWandering();
-    kinematicWandering.character = kinematic2;
-    kinematicWandering.maxSpeed = 40.0;
+    var kinematic2Wandering = new KinematicWandering();
+    kinematic2Wandering.character = kinematic2;
+    kinematic2Wandering.maxSpeed = 40.0;
+    kinematic2Movements[2] = kinematic2Wandering;
+    
 }
 
 function clipPosition(obj) {
@@ -76,11 +104,36 @@ function clipPosition(obj) {
 // Update Game Objects
 var update = function(modifier) {
     
+    // Key pressed
+    if(81 in keysDown) { // q
+        selectedMovement = 0;
+    }
+    
+    if(87 in keysDown) { // w
+        selectedMovement = 1;
+    }
+    
+    if(69 in keysDown) { // e
+        selectedMovement = 2;
+    }
+    
+    if(65 in keysDown) { // a
+        selectedMovement2 = 0;
+    }
+    
+    if(83 in keysDown) { // s
+        selectedMovement2 = 1;
+    }
+    
+    if(68 in keysDown) { // d
+        selectedMovement2 = 2;
+    }
+
     // steering algorithm
-    var steeringOutput = kinematicSeek.getSteering();
+    var steeringOutput = kinematicMovements[selectedMovement].getSteering();
     kinematic.Update(steeringOutput,modifier);
     
-    steeringOutput = kinematicWandering.getSteering();
+    steeringOutput = kinematic2Movements[selectedMovement2].getSteering();
     kinematic2.Update(steeringOutput,modifier);
     
     // clip the position
@@ -161,10 +214,38 @@ var render = function() {
     ctx.font = "12px Helvetica";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("Kinematic1 Seek", 32, 32);
+    
+    switch(selectedMovement) {
+        case 0:
+            ctx.fillText("Kinematic1 Seek", 32, 32);
+            break;
+        case 1:
+            ctx.fillText("Kinematic1 Flee", 32, 32);
+            break;
+        case 2:
+            ctx.fillText("Kinematic1 Wandering", 32, 32);
+            break;
+    }
+    ctx.fillText("'q' for Seek", 32, 48);
+    ctx.fillText("'w' for Flee", 32, 64);
+    ctx.fillText("'e' for Wandering", 32, 80);
     
     ctx.fillStyle = "rgb(0,255,0)";
-    ctx.fillText("Kinematic2 Wandering", 600, 32);
+    switch(selectedMovement2) {
+        case 0:
+            ctx.fillText("Kinematic2 Seek", 600, 32);
+            break;
+        case 1:
+            ctx.fillText("Kinematic2 Flee", 600, 32);
+            break;
+        case 2:
+            ctx.fillText("Kinematic2 Wandering", 600, 32);
+            break;
+    }
+    ctx.fillText("'a' for Seek", 600, 48);
+    ctx.fillText("'s' for Flee", 600, 64);
+    ctx.fillText("'d' for Wandering", 600, 80);
+    
 }
 
 // Cross-browser support for requestAnimationFrame
