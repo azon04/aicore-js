@@ -60,7 +60,27 @@ function Kinematic()
         this.velocity.x = this.velocity.x + steering.linear.x * time;
         this.velocity.y = this.velocity.y + steering.linear.y * time;
         this.rotation = this.rotation + steering.angular * time;
-    }
+    };
+    
+    this.UpdateSteering = function(steering, maxSpeed, time) {
+        
+        // Update the position and orientation
+        this.position.x += this.velocity.x * time;
+        this.position.y += this.velocity.y * time;
+        this.orientation += this.rotation * time;
+        
+        // and the velocity and rotation
+        this.velocity.x += steering.linear.x * time;
+        this.velocity.y += steering.linear.y * time;
+        this.rotation += steering.angular * time;
+        
+        // Check speeding and clip
+        if(this.velocity.length() > maxSpeed) {
+            this.velocity.normalize();
+            this.velocity.x *= maxSpeed;
+            this.velocity.y *= maxSpeed;
+        }
+    };
     
 }
 

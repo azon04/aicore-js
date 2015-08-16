@@ -114,3 +114,59 @@ function KinematicArrive() {
         return steeringOutput;
     };
 }
+
+
+// Steering algorithm
+function SteeringSeek() {
+    // Hold data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Maximum Speed the character can travel
+    this.maxAccel = 0.0;
+    
+    this.getSteering = function() {
+        
+        var steeringOutput = new SteeringOutput();
+        
+        steeringOutput.linear.x = this.target.position.x - this.character.position.x;
+        steeringOutput.linear.y = this.target.position.y - this.character.position.y;
+        
+        steeringOutput.linear.normalize();
+        steeringOutput.linear.x *= this.maxAccel;
+        steeringOutput.linear.y *= this.maxAccel;
+        
+        this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        
+        // Output steering
+        steeringOutput.angular = 0;
+        return steeringOutput;
+    };
+}
+
+function SteeringFlee() {
+    // Hold data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Maximum Speed the character can travel
+    this.maxAccel = 0.0;
+    
+    this.getSteering = function() {
+        
+        var steeringOutput = new SteeringOutput();
+        
+        steeringOutput.linear.x = this.character.position.x - this.target.position.x;
+        steeringOutput.linear.y = this.character.position.y - this.target.position.y;
+        
+        steeringOutput.linear.normalize();
+        steeringOutput.linear.x *= this.maxAccel;
+        steeringOutput.linear.y *= this.maxAccel;
+        
+        this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        
+        // Output steering
+        steeringOutput.angular = 0;
+        return steeringOutput;
+    };
+}
