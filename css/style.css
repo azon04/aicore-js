@@ -1,0 +1,19 @@
+
+#main-canvas {
+    margin: auto;
+    border:1px solid black;
+    display: block;
+}
+
+h2 {
+    margin: auto;
+    text-align: center;
+}
+
+h1 {
+    margin: auto;
+}
+
+p {
+    text-align: center;
+}
