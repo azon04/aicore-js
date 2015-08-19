@@ -45,6 +45,16 @@ var init = function() {
     steeringFlee.maxAccel = 5.0;
     steeringMovements[1] = steeringFlee;
     
+    // Set Arrive
+    var steeringArrive = new SteeringArrive();
+    steeringArrive.character = kinematic;
+    steeringArrive.target = kinematic2;
+    steeringArrive.maxAccel = 5.0;
+    steeringArrive.maxSpeed = 20.0;
+    steeringArrive.targetRadius = 5.0;
+    steeringArrive.slowRadius = 100.0;
+    steeringMovements[2] = steeringArrive;
+    
     
     // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
@@ -63,6 +73,16 @@ var init = function() {
     steering2Flee.target = kinematic;
     steering2Flee.maxAccel = 5.0;
     steering2Movements[1] = steering2Flee;
+    
+    // Set Arrive
+    var steering2Arrive = new SteeringArrive();
+    steering2Arrive.character = kinematic2;
+    steering2Arrive.target = kinematic;
+    steering2Arrive.maxAccel = 5.0;
+    steering2Arrive.maxSpeed = 20.0;
+    steering2Arrive.targetRadius = 5.0;
+    steering2Arrive.slowRadius = 100.0;
+    steering2Movements[2] = steering2Arrive;
     
 }
 
@@ -93,11 +113,11 @@ var update = function(modifier) {
         selectedMovement = 1;
     }
     
-    /*if(69 in keysDown) { // e
+    if(69 in keysDown) { // e
         selectedMovement = 2;
     }
     
-    if(82 in keysDown) { // r
+    /*if(82 in keysDown) { // r
         selectedMovement = 3;
     }
     */
@@ -110,20 +130,22 @@ var update = function(modifier) {
         selectedMovement2 = 1;
     }
     
-    /*if(68 in keysDown) { // d
+    if(68 in keysDown) { // d
         selectedMovement2 = 2;
     }
     
-    if(70 in keysDown) { // f
+    /*if(70 in keysDown) { // f
         selectedMovement2 = 3;
     }*/
 
     // steering algorithm
     var steeringOutput = steeringMovements[selectedMovement].getSteering();
     kinematic.UpdateSteering(steeringOutput, maxSpeed ,modifier);
+    kinematic.orientation = getNewOrientation(kinematic.orientation, kinematic.velocity);
     
     steeringOutput = steering2Movements[selectedMovement2].getSteering();
     kinematic2.UpdateSteering(steeringOutput, maxSpeed, modifier);
+    kinematic2.orientation = getNewOrientation(kinematic2.orientation, kinematic2.velocity);
     
     // clip the position
     clipPosition(kinematic);
@@ -210,7 +232,7 @@ var render = function() {
             ctx.fillText("Steering Flee", 32, 32);
             break;
         case 2:
-            ctx.fillText("Kinematic1 Wandering", 32, 32);
+            ctx.fillText("Steering Arrive", 32, 32);
             break;
         case 3:
             ctx.fillText("Kinematic1 Arrive", 32, 32);
@@ -218,7 +240,7 @@ var render = function() {
     }
     ctx.fillText("'q' for Seek", 32, 48);
     ctx.fillText("'w' for Flee", 32, 64);
-    ctx.fillText("'e' for Wandering", 32, 80);
+    ctx.fillText("'e' for arrive", 32, 80);
     ctx.fillText("'r' for Arrive", 32, 96)
     
     ctx.fillStyle = "rgb(0,255,0)";
@@ -230,7 +252,7 @@ var render = function() {
             ctx.fillText("Steering Flee", 600, 32);
             break;
         case 2:
-            ctx.fillText("Kinematic2 Wandering", 600, 32);
+            ctx.fillText("Steering Arrive", 600, 32);
             break;
         case 3:
             ctx.fillText("Kinematic2 Arrive", 600, 32);
@@ -238,7 +260,7 @@ var render = function() {
     }
     ctx.fillText("'a' for Seek", 600, 48);
     ctx.fillText("'s' for Flee", 600, 64);
-    ctx.fillText("'d' for Wandering", 600, 80);
+    ctx.fillText("'d' for Arrive", 600, 80);
     ctx.fillText("'f' for Arrive", 600, 96);
     
 }

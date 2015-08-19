@@ -170,3 +170,71 @@ function SteeringFlee() {
         return steeringOutput;
     };
 }
+
+function SteeringArrive() {
+    // Hold data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Maximum Speed and Acceleration of the character
+    this.maxAccel = 0.0;
+    this.maxSpeed = 0.0;
+    
+    // Holds the radius for arriving at the target
+    this.targetRadius = 0.0;
+    
+    // Holds the radius for beginnung to slow down
+    this.slowRadius = 1.0;
+    
+    // Holds the time over which to achieve target speed
+    this.timeToTarget = 0.1;
+    
+    this.getSteering = function() {
+        
+        var steeringOutput = new SteeringOutput();
+        
+        // Get the direction to the target
+        var direction = new Vector(0,0);
+        direction.x = this.target.position.x - this.character.position.x;
+        direction.y = this.target.position.y - this.character.position.y;
+        var distance = direction.length();
+        
+        // check if we are there return no steering
+        if(distance < this.targetRadius) {
+            return steeringOutput;
+        }
+        
+        // If we are outside of slow radius, then go max speed
+        var targetSpeed;
+        if(distance > this.slowRadius) {
+            targetSpeed = this.maxSpeed;
+        } // otherwise calculate a scaled speed
+        else {
+            targetSpeed = this.maxSpeed * distance / this.slowRadius;
+            
+        }
+        
+        // Target velocity combines speed and direction
+        var targetVelocity = direction;
+        targetVelocity.normalize();
+        targetVelocity.x *= targetSpeed;
+        targetVelocity.y *= targetSpeed;
+        
+        // Accelerate tries to get the target velocity
+        steeringOutput.linear.x = targetVelocity.x - this.character.velocity.x;
+        steeringOutput.linear.y = targetVelocity.y - this.character.velocity.y;
+        steeringOutput.linear.x /= this.timeToTarget;
+        steeringOutput.linear.y /= this.timeToTarget;
+        
+        // Check if the acceleration is too fast
+        if(steeringOutput.linear.length() > this.maxAccel) {
+            steeringOutput.linear.normalize();
+            steeringOutput.linear.x *= this.maxAccel;
+            steeringOutput.linear.y *= this.maxAccel;
+        }
+        
+        // Output steering
+        steeringOutput.angular = 0;
+        return steeringOutput;
+    };
+}
