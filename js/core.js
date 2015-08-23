@@ -99,3 +99,7 @@ function SteeringOutput()
     this.linear = new Vector(0,0);
     this.angular = 0;
 }
+
+function mapToRange(angle) {
+    return angle % (2*Math.PI);
+}

@@ -55,10 +55,20 @@ var init = function() {
     steeringArrive.slowRadius = 100.0;
     steeringMovements[2] = steeringArrive;
     
+    // Set Align
+    var steeringAlign = new SteeringAlign();
+    steeringAlign.character = kinematic;
+    steeringAlign.target = kinematic2;
+    steeringAlign.maxAngularAcceleration = Math.PI / 15.0;
+    steeringAlign.maxRotation = Math.PI / 10.0;
+    steeringAlign.targetRadius = 0.01;
+    steeringAlign.slowRadius = Math.PI / 4.0;
+    steeringMovements[3] = steeringAlign;
     
     // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
     kinematic2.position.y = (Math.random() * canvas.height);
+    kinematic2.orientation = Math.PI / 2.0;
     
     // Set seek
     var steering2Seek = new SteeringSeek();
@@ -84,6 +94,15 @@ var init = function() {
     steering2Arrive.slowRadius = 100.0;
     steering2Movements[2] = steering2Arrive;
     
+    // Set Align
+    var steering2Align = new SteeringAlign();
+    steering2Align.character = kinematic;
+    steering2Align.target = kinematic2;
+    steering2Align.maxAngularAcceleration = Math.PI / 15.0;
+    steering2Align.maxRotation = Math.PI / 10.0;
+    steering2Align.targetRadius = 0.01;
+    steering2Align.slowRadius = Math.PI / 4.0;
+    steering2Movements[3] = steering2Align;
 }
 
 function clipPosition(obj) {
@@ -117,10 +136,10 @@ var update = function(modifier) {
         selectedMovement = 2;
     }
     
-    /*if(82 in keysDown) { // r
+    if(82 in keysDown) { // r
         selectedMovement = 3;
     }
-    */
+    
     
     if(65 in keysDown) { // a
         selectedMovement2 = 0;
@@ -134,18 +153,20 @@ var update = function(modifier) {
         selectedMovement2 = 2;
     }
     
-    /*if(70 in keysDown) { // f
+    if(70 in keysDown) { // f
         selectedMovement2 = 3;
-    }*/
+    }
 
     // steering algorithm
     var steeringOutput = steeringMovements[selectedMovement].getSteering();
     kinematic.UpdateSteering(steeringOutput, maxSpeed ,modifier);
-    kinematic.orientation = getNewOrientation(kinematic.orientation, kinematic.velocity);
+    if(selectedMovement < 3)
+        kinematic.orientation = getNewOrientation(kinematic.orientation, kinematic.velocity);
     
     steeringOutput = steering2Movements[selectedMovement2].getSteering();
     kinematic2.UpdateSteering(steeringOutput, maxSpeed, modifier);
-    kinematic2.orientation = getNewOrientation(kinematic2.orientation, kinematic2.velocity);
+    if(selectedMovement2 < 3)
+        kinematic2.orientation = getNewOrientation(kinematic2.orientation, kinematic2.velocity);
     
     // clip the position
     clipPosition(kinematic);
@@ -235,13 +256,13 @@ var render = function() {
             ctx.fillText("Steering Arrive", 32, 32);
             break;
         case 3:
-            ctx.fillText("Kinematic1 Arrive", 32, 32);
+            ctx.fillText("Steering Align", 32, 32);
             break;
     }
     ctx.fillText("'q' for Seek", 32, 48);
     ctx.fillText("'w' for Flee", 32, 64);
-    ctx.fillText("'e' for arrive", 32, 80);
-    ctx.fillText("'r' for Arrive", 32, 96)
+    ctx.fillText("'e' for Arrive", 32, 80);
+    ctx.fillText("'r' for Align", 32, 96)
     
     ctx.fillStyle = "rgb(0,255,0)";
     switch(selectedMovement2) {
@@ -255,13 +276,13 @@ var render = function() {
             ctx.fillText("Steering Arrive", 600, 32);
             break;
         case 3:
-            ctx.fillText("Kinematic2 Arrive", 600, 32);
+            ctx.fillText("Steering Align", 600, 32);
             break;
     }
     ctx.fillText("'a' for Seek", 600, 48);
     ctx.fillText("'s' for Flee", 600, 64);
     ctx.fillText("'d' for Arrive", 600, 80);
-    ctx.fillText("'f' for Arrive", 600, 96);
+    ctx.fillText("'f' for Align", 600, 96);
     
 }
 

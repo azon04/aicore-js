@@ -238,3 +238,67 @@ function SteeringArrive() {
         return steeringOutput;
     };
 }
+
+function SteeringAlign() {
+    // Holds the Kinematic data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Holds the max angular acceleration and rotation
+    // of the character
+    this.maxAngularAcceleration = 0.0;
+    this.maxRotation = 0.0;
+    
+    // Holds the radius for arriving at the target
+    this.targetRadius = 0.0;
+    
+    // Holds the radius for beginning to slow down
+    this.slowRadius = 0.0;
+    
+    // Holds the time over which to achieve target speed
+    this.timeToTarget = 0.1;
+    
+    this.getSteering = function() {
+        
+        var steering = new SteeringOutput();
+        
+        // Get the naive direction to the target
+        var rotation = this.target.orientation - this.character.orientation;
+        
+        // Map the result to the (-pi,pi) interval
+        rotation = mapToRange(rotation);
+        var rotationSize = Math.abs(rotation);
+        
+        // Check if we are there
+        if(rotationSize < this.targetRadius) {
+            return steering;
+        }
+        
+        var targetRotation = 0;
+        // If we are outside the slowradius, then use
+        // maximum rotation
+        if(rotationSize > this.slowRadius) {
+            targetRotation = this.maxRotation;
+        } // Otherwise calculate a scaled rotation
+        else {
+            targetRotation = this.maxRotation * rotationSize / this.slowRadius;
+        }
+        
+        // The final target rotation combines
+        // speed (already in the variable) and direction
+        targetRotation *= rotation / rotationSize;
+        
+        // Acceleration tries to get to target rotation
+        steering.angular = targetRotation - this.character.rotation;
+        steering.angular /= this.timeToTarget;
+        
+        // Check if acceleration is too great
+        var angularAcceleration = Math.abs(steering.angular);
+        if(angularAcceleration > this.maxAngularAcceleration) {
+            steering.angular /= angularAcceleration;
+            steering.angular *= this.maxAngularAcceleration;
+        }
+        
+        return steering;
+    };
+}
