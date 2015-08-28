@@ -31,92 +31,43 @@ var init = function() {
     kinematic = new Kinematic();
     kinematic2 = new Kinematic();
     
-    // Set seek
-    var steeringSeek = new SteeringSeek();
-    steeringSeek.character = kinematic;
-    steeringSeek.target = kinematic2;
-    steeringSeek.maxAccel = 5.0;
-    steeringMovements[0] = steeringSeek;
+    // Set Pursue
+    var pursue = new Pursue();
+    pursue.maxPrediction = 5.0;
+    pursue.target = kinematic2;
+    pursue.seek.character = kinematic;
+    pursue.seek.maxAccel = 5.0;
+    steeringMovements[0] = pursue;
     
-    // Set flee
-    var steeringFlee = new SteeringFlee();
-    steeringFlee.character = kinematic;
-    steeringFlee.target = kinematic2;
-    steeringFlee.maxAccel = 5.0;
-    steeringMovements[1] = steeringFlee;
-    
-    // Set Arrive
-    var steeringArrive = new SteeringArrive();
-    steeringArrive.character = kinematic;
-    steeringArrive.target = kinematic2;
-    steeringArrive.maxAccel = 5.0;
-    steeringArrive.maxSpeed = 20.0;
-    steeringArrive.targetRadius = 5.0;
-    steeringArrive.slowRadius = 100.0;
-    steeringMovements[2] = steeringArrive;
-    
-    // Set Align
-    var steeringAlign = new SteeringAlign();
-    steeringAlign.character = kinematic;
-    steeringAlign.target = kinematic2;
-    steeringAlign.maxAngularAcceleration = Math.PI / 15.0;
-    steeringAlign.maxRotation = Math.PI / 10.0;
-    steeringAlign.targetRadius = 0.01;
-    steeringAlign.slowRadius = Math.PI / 4.0;
-    steeringMovements[3] = steeringAlign;
-    
-    // Set Velocity Match
-    var velocityMatch = new VelocityMatch();
-    velocityMatch.character = kinematic;
-    velocityMatch.target = kinematic2;
-    velocityMatch.maxAccel = 10.0;
-    steeringMovements[4] = velocityMatch;
+    // Set Evade
+    var evade = new Evade();
+    evade.maxPrediction = 5.0;
+    evade.target = kinematic2;
+    evade.flee.character = kinematic;
+    evade.flee.maxAccel = 5.0;
+    steeringMovements[1] = evade;
     
     // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
     kinematic2.position.y = (Math.random() * canvas.height);
     kinematic2.orientation = Math.PI / 2.0;
     
-    // Set seek
-    var steering2Seek = new SteeringSeek();
-    steering2Seek.character = kinematic2;
-    steering2Seek.target = kinematic;
-    steering2Seek.maxAccel = 5.0;
-    steering2Movements[0] = steering2Seek;
+    // Set Pursue
+    var pursue2 = new Pursue();
+    pursue2.maxPrediction = 5.0;
+    pursue2.target = kinematic;
+    pursue2.seek.character = kinematic2;
+    pursue2.seek.maxAccel = 5.0;
+    steering2Movements[0] = pursue2;
     
-    // Set flee
-    var steering2Flee = new SteeringFlee();
-    steering2Flee.character = kinematic2;
-    steering2Flee.target = kinematic;
-    steering2Flee.maxAccel = 5.0;
-    steering2Movements[1] = steering2Flee;
-    
-    // Set Arrive
-    var steering2Arrive = new SteeringArrive();
-    steering2Arrive.character = kinematic2;
-    steering2Arrive.target = kinematic;
-    steering2Arrive.maxAccel = 5.0;
-    steering2Arrive.maxSpeed = 20.0;
-    steering2Arrive.targetRadius = 5.0;
-    steering2Arrive.slowRadius = 100.0;
-    steering2Movements[2] = steering2Arrive;
-    
-    // Set Align
-    var steering2Align = new SteeringAlign();
-    steering2Align.character = kinematic;
-    steering2Align.target = kinematic2;
-    steering2Align.maxAngularAcceleration = Math.PI / 15.0;
-    steering2Align.maxRotation = Math.PI / 10.0;
-    steering2Align.targetRadius = 0.01;
-    steering2Align.slowRadius = Math.PI / 4.0;
-    steering2Movements[3] = steering2Align;
-    
-    // Set Velocity Match
-    var velocity2Match = new VelocityMatch();
-    velocity2Match.character = kinematic2;
-    velocity2Match.target = kinematic;
-    velocity2Match.maxAccel = 10.0;
-    steering2Movements[4] = velocity2Match;
+    // Set Evade
+    var evade2 = new Evade();
+    evade2.maxPrediction = 5.0;
+    evade2.target = kinematic;
+    evade2.flee.character = kinematic2;
+    evade2.flee.maxAccel = 5.0;
+    steering2Movements[1] = evade2;
+
 }
 
 function clipPosition(obj) {
@@ -146,7 +97,7 @@ var update = function(modifier) {
         selectedMovement = 1;
     }
     
-    if(69 in keysDown) { // e
+    /*if(69 in keysDown) { // e
         selectedMovement = 2;
     }
     
@@ -156,7 +107,7 @@ var update = function(modifier) {
     
     if(84 in keysDown) { // t
         selectedMovement = 4;
-    }
+    }*/
     
     if(65 in keysDown) { // a
         selectedMovement2 = 0;
@@ -166,7 +117,7 @@ var update = function(modifier) {
         selectedMovement2 = 1;
     }
     
-    if(68 in keysDown) { // d
+    /*if(68 in keysDown) { // d
         selectedMovement2 = 2;
     }
     
@@ -176,7 +127,7 @@ var update = function(modifier) {
     
     if(71 in keysDown) { // g
         selectedMovement2 = 4;
-    }
+    }*/
 
     // steering algorithm
     var steeringOutput = steeringMovements[selectedMovement].getSteering();
@@ -268,10 +219,10 @@ var render = function() {
     
     switch(selectedMovement) {
         case 0:
-            ctx.fillText("Steering Seek", 32, 32);
+            ctx.fillText("Pursue (From Seek)", 32, 32);
             break;
         case 1:
-            ctx.fillText("Steering Flee", 32, 32);
+            ctx.fillText("Evade (From Flee)", 32, 32);
             break;
         case 2:
             ctx.fillText("Steering Arrive", 32, 32);
@@ -283,8 +234,8 @@ var render = function() {
             ctx.fillText("Velocity Matching", 32, 32);
             break;
     }
-    ctx.fillText("'q' for Seek", 32, 48);
-    ctx.fillText("'w' for Flee", 32, 64);
+    ctx.fillText("'q' for Pursue", 32, 48);
+    ctx.fillText("'w' for Evade", 32, 64);
     ctx.fillText("'e' for Arrive", 32, 80);
     ctx.fillText("'r' for Align", 32, 96);
     ctx.fillText("'t' for Velocity Match", 32, 112);
@@ -292,10 +243,10 @@ var render = function() {
     ctx.fillStyle = "rgb(0,255,0)";
     switch(selectedMovement2) {
         case 0:
-            ctx.fillText("Steering Seek", 600, 32);
+            ctx.fillText("Pursue (From Seek)", 600, 32);
             break;
         case 1:
-            ctx.fillText("Steering Flee", 600, 32);
+            ctx.fillText("Evade (From Flee)", 600, 32);
             break;
         case 2:
             ctx.fillText("Steering Arrive", 600, 32);
@@ -308,8 +259,8 @@ var render = function() {
             break;
     }
     
-    ctx.fillText("'a' for Seek", 600, 48);
-    ctx.fillText("'s' for Flee", 600, 64);
+    ctx.fillText("'a' for Pursue", 600, 48);
+    ctx.fillText("'s' for Evade", 600, 64);
     ctx.fillText("'d' for Arrive", 600, 80);
     ctx.fillText("'f' for Align", 600, 96);
     ctx.fillText("'g' for Velocity Matching", 600, 112);

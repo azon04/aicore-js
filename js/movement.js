@@ -302,3 +302,114 @@ function SteeringAlign() {
         return steering;
     };
 }
+
+function VelocityMatch() {
+    // Hold data for the character and target
+    this.character = {};
+    this.target = {};
+    
+    // Maximum Acceleration of the character
+    this.maxAccel = 0.0;
+    
+    // Holds the time over which to achieve target speed
+    this.timeToTarget = 0.1;
+    
+    this.getSteering = function() {
+        
+        var steeringOutput = new SteeringOutput();
+        
+        // Acceleration tries to get to the target velocity
+        steeringOutput.linear.x = this.target.velocity.x - this.character.velocity.x;
+        steeringOutput.linear.y = this.target.velocity.y - this.character.velocity.y;
+        steeringOutput.linear.x /= this.timeToTarget;
+        steeringOutput.linear.y /= this.timeToTarget;
+        
+        // Check if the acceleration is too fast
+        if(steeringOutput.linear.length() > this.maxAccel) {
+            steeringOutput.linear.normalize();
+            steeringOutput.linear.x *= this.maxAccel;
+            steeringOutput.linear.y *= this.maxAccel;
+        }
+        
+        // Output steering
+        steeringOutput.angular = 0;
+        return steeringOutput;
+    };
+}
+
+/**
+* Delegated Movements
+**/
+
+function Pursue() {
+    this.seek = new SteeringSeek();
+    
+    // Holds the maximum prediction time
+    this.maxPrediction = 0.0;
+    
+    //
+    this.target ={};
+    
+    this.getSteering = function() {
+        // Work out the distance target
+        var direction = new Vector( this.target.position.x - this.seek.character.position.x,
+                                   this.target.position.y - this.seek.character.position.y);
+        var distance = direction.length();
+        
+        // Work out our current speed
+        var speed = this.seek.character.velocity.length();
+        
+        var prediction = 0;
+        // Check if speed is too small to give a reasonable
+        // prediction time
+        if(speed <= distance/this.maxPrediction)
+            prediction = this.maxPrediction;
+        else
+            prediction = distance / speed;
+        
+        // Put the target together
+        this.seek.target = new Kinematic();
+        this.seek.target.position.x = this.target.position.x + this.target.velocity.x * prediction;
+        this.seek.target.position.y = this.target.position.y + this.target.velocity.y * prediction;
+        
+        return this.seek.getSteering();
+                                   
+    }
+}
+
+
+function Evade() {
+    this.flee = new SteeringFlee();
+    
+    // Holds the maximum prediction time
+    this.maxPrediction = 0.0;
+    
+    //
+    this.target ={};
+    
+    this.getSteering = function() {
+        // Work out the distance target
+        var direction = new Vector( this.target.position.x - this.flee.character.position.x,
+                                   this.target.position.y - this.flee.character.position.y);
+        var distance = direction.length();
+        
+        // Work out our current speed
+        var speed = this.flee.character.velocity.length();
+        
+        var prediction = 0;
+        // Check if speed is too small to give a reasonable
+        // prediction time
+        if(speed <= distance/this.maxPrediction)
+            prediction = this.maxPrediction;
+        else
+            prediction = distance / speed;
+        
+        // Put the target together
+        this.flee.target = new Kinematic();
+        this.flee.target.position.x = this.target.position.x + this.target.velocity.x * prediction;
+        this.flee.target.position.y = this.target.position.y + this.target.velocity.y * prediction;
+        
+        return this.flee.getSteering();
+                                   
+    }
+}
