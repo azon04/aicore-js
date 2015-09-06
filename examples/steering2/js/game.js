@@ -5,14 +5,27 @@ canvas.width = 800;
 canvas.height = 600;
 
 var kinematic = {};
+
+// For steering Movement
 var steeringMovements = [];
 var selectedMovement = 0;
 
+// For face movement
+var faceMovements = [];
+var selectedFaceMovement = 0;
+
 var kinematic2 = {};
+
+// For Steering Movement
 var steering2Movements = [];
 var selectedMovement2 = 0;
 
-var maxSpeed = 32;
+// For face movement
+var face2Movements = [];
+var selectedFace2Movement = 0;
+
+var maxSpeed1 = 50;
+var maxSpeed2 = 32;
 
 // Handle keyboard controls
 var keysDown = {};
@@ -36,7 +49,7 @@ var init = function() {
     pursue.maxPrediction = 5.0;
     pursue.target = kinematic2;
     pursue.seek.character = kinematic;
-    pursue.seek.maxAccel = 5.0;
+    pursue.seek.maxAccel = 10.0;
     steeringMovements[0] = pursue;
     
     // Set Evade
@@ -46,6 +59,26 @@ var init = function() {
     evade.flee.character = kinematic;
     evade.flee.maxAccel = 5.0;
     steeringMovements[1] = evade;
+    
+    // Set face Movement
+    var face = new Face();
+    face.Align.character = kinematic;
+    face.target = kinematic2;
+    face.Align.maxAngularAcceleration = Math.PI / 15.0;
+    face.Align.maxRotation = Math.PI / 10.0;
+    face.Align.targetRadius = 0.01;
+    face.Align.slowRadius = Math.PI / 4.0;
+    faceMovements[0] = face;
+    
+    // Set Look where youre going Movement
+    var lookWhereYoureGoing = new LookWhereYoureGoing();
+    lookWhereYoureGoing.Align.character = kinematic;
+    lookWhereYoureGoing.Align.maxAngularAcceleration = Math.PI / 15.0;
+    lookWhereYoureGoing.Align.maxRotation = Math.PI / 10.0;
+    lookWhereYoureGoing.Align.targetRadius = 0.01;
+    lookWhereYoureGoing.Align.slowRadius = Math.PI / 4.0;
+    faceMovements[1] = lookWhereYoureGoing;
+    
     
     // Set for Kinematic 2
     kinematic2.position.x = (Math.random() * canvas.width);
@@ -67,6 +100,25 @@ var init = function() {
     evade2.flee.character = kinematic2;
     evade2.flee.maxAccel = 5.0;
     steering2Movements[1] = evade2;
+    
+    // Set face Movement
+    var face2 = new Face();
+    face2.Align.character = kinematic2;
+    face2.target = kinematic;
+    face2.Align.maxAngularAcceleration = Math.PI / 15.0;
+    face2.Align.maxRotation = Math.PI / 10.0;
+    face2.Align.targetRadius = 0.01;
+    face2.Align.slowRadius = Math.PI / 4.0;
+    face2Movements[0] = face2;
+    
+    // Set Look where youre going Movement
+    var lookWhereYoureGoing2 = new LookWhereYoureGoing();
+    lookWhereYoureGoing2.Align.character = kinematic2;
+    lookWhereYoureGoing2.Align.maxAngularAcceleration = Math.PI / 15.0;
+    lookWhereYoureGoing2.Align.maxRotation = Math.PI / 10.0;
+    lookWhereYoureGoing2.Align.targetRadius = 0.01;
+    lookWhereYoureGoing2.Align.slowRadius = Math.PI / 4.0;
+    face2Movements[1] = lookWhereYoureGoing2;
 
 }
 
@@ -97,6 +149,14 @@ var update = function(modifier) {
         selectedMovement = 1;
     }
     
+    if(79 in keysDown) { // o
+        selectedFaceMovement = 0;
+    }
+    
+    if(80 in keysDown) { // p
+        selectedFaceMovement = 1;
+    }
+    
     /*if(69 in keysDown) { // e
         selectedMovement = 2;
     }
@@ -117,6 +177,14 @@ var update = function(modifier) {
         selectedMovement2 = 1;
     }
     
+    if(75 in keysDown) { // k
+        selectedFace2Movement = 0;
+    }
+    
+    if(76 in keysDown) { // l
+        selectedFace2Movement = 1;
+    }
+    
     /*if(68 in keysDown) { // d
         selectedMovement2 = 2;
     }
@@ -131,14 +199,14 @@ var update = function(modifier) {
 
     // steering algorithm
     var steeringOutput = steeringMovements[selectedMovement].getSteering();
-    kinematic.UpdateSteering(steeringOutput, maxSpeed ,modifier);
-    if(selectedMovement < 3)
-        kinematic.orientation = getNewOrientation(kinematic.orientation, kinematic.velocity);
+    kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    steeringOutput = faceMovements[selectedFaceMovement].getSteering();
+    kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
     
     steeringOutput = steering2Movements[selectedMovement2].getSteering();
-    kinematic2.UpdateSteering(steeringOutput, maxSpeed, modifier);
-    if(selectedMovement2 < 3)
-        kinematic2.orientation = getNewOrientation(kinematic2.orientation, kinematic2.velocity);
+    kinematic2.UpdateSteering(steeringOutput, maxSpeed2, modifier);
+    steeringOutput = face2Movements[selectedFace2Movement].getSteering();
+    kinematic2.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
     
     // clip the position
     clipPosition(kinematic);
@@ -239,6 +307,16 @@ var render = function() {
     ctx.fillText("'e' for Arrive", 32, 80);
     ctx.fillText("'r' for Align", 32, 96);
     ctx.fillText("'t' for Velocity Match", 32, 112);
+    switch(selectedFaceMovement) {
+        case 0:
+            ctx.fillText("Face", 32, 128);
+            break;
+        case 1:
+            ctx.fillText("Look Where You're Going", 32, 128);
+            break;
+    }
+    ctx.fillText("'o' for Face", 32, 144);
+    ctx.fillText("'p' for Look Where You're Going", 32, 160);
     
     ctx.fillStyle = "rgb(0,255,0)";
     switch(selectedMovement2) {
@@ -264,6 +342,17 @@ var render = function() {
     ctx.fillText("'d' for Arrive", 600, 80);
     ctx.fillText("'f' for Align", 600, 96);
     ctx.fillText("'g' for Velocity Matching", 600, 112);
+    
+    switch(selectedFace2Movement) {
+        case 0:
+            ctx.fillText("Face", 600, 128);
+            break;
+        case 1:
+            ctx.fillText("Look Where You're Going", 600, 128);
+            break;
+    }
+    ctx.fillText("'o' for Face", 600, 144);
+    ctx.fillText("'p' for Look Where You're Going", 600, 160);
     
 }
 

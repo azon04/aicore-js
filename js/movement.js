@@ -136,7 +136,7 @@ function SteeringSeek() {
         steeringOutput.linear.x *= this.maxAccel;
         steeringOutput.linear.y *= this.maxAccel;
         
-        this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        //this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
         
         // Output steering
         steeringOutput.angular = 0;
@@ -163,7 +163,7 @@ function SteeringFlee() {
         steeringOutput.linear.x *= this.maxAccel;
         steeringOutput.linear.y *= this.maxAccel;
         
-        this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        //this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
         
         // Output steering
         steeringOutput.angular = 0;
@@ -411,5 +411,49 @@ function Evade() {
         
         return this.flee.getSteering();
                                    
+    }
+}
+
+function Face() {
+    this.Align = new SteeringAlign();
+    
+    //
+    this.target = {};
+    
+    this.getSteering = function() {
+        // Calculate teh target to delegate
+        
+        // Work out the direction to target
+        var direction = new Vector(0,0);
+        direction.x = this.target.position.x - this.Align.character.position.x;
+        direction.y = this.target.position.y - this.Align.character.position.y;
+        
+        // Check for a zero direction, and make no change if so
+        if(direction.length() == 0)
+            return new SteeringOutput();
+        
+        // Put target together
+        this.Align.target = new Kinematic();
+        this.Align.target.orientation = Math.atan2(-direction.x, direction.y);
+        
+        return this.Align.getSteering();
+    }
+}
+
+function LookWhereYoureGoing() {
+    this.Align = new SteeringAlign();
+    
+    this.getSteering = function() {
+        // Calculate the target to dlegate
+        
+        // Check a zero direction, and make no change if so
+        if(this.Align.character.velocity.length() == 0)
+            return new SteeringOutput();
+        
+        // Otherwise set the target based on the velocity
+        this.Align.target = new Kinematic();
+        this.Align.target.orientation = Math.atan2(-this.Align.character.velocity.x, this.Align.character.velocity.y);
+        
+        return this.Align.getSteering();
     }
 }
