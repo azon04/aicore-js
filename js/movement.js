@@ -64,6 +64,7 @@ function KinematicWandering() {
         
         var steeringOutput = new SteeringOutput();
         
+        // As Vector function : change from orientation to Vector
         steeringOutput.linear.x = -this.maxSpeed * Math.sin(this.character.orientation);
         steeringOutput.linear.y = this.maxSpeed * Math.cos(this.character.orientation);
         
@@ -455,5 +456,51 @@ function LookWhereYoureGoing() {
         this.Align.target.orientation = Math.atan2(-this.Align.character.velocity.x, this.Align.character.velocity.y);
         
         return this.Align.getSteering();
+    }
+}
+
+function Wander() {
+    this.Face = new Face();
+    
+    // Holds the radius and the forwared offset of the wander circle
+    this.wanderOffset = 0.0;
+    this.wanderRadius = 0.0;
+    
+    // Holds the maximum rate at which the wander orientation can change
+    this.wanderRate = 0.0;
+    
+    // Holds the current orientation of the wander target
+    this.wanderOrientation = 0.0;
+    
+    // Hold the maximum acceleration of the character
+    this.maxAccel = 0.0;
+    
+    this.getSteering = function() {
+        // Calculate the target to delegate to face
+        
+        // Update the wander orientation
+        this.wanderOrientation += (Math.random() - Math.random()) * this.wanderRate;
+        
+        // Calculate the combined target orientation
+        var targetOrientation = this.wanderOrientation + this.Face.Align.character.orientation;
+        
+        
+        // Calculate the circle of the wander circle
+        this.Face.target = new Kinematic();
+        this.Face.target.position.x = this.Face.Align.character.position.x + this.wanderOffset * -Math.sin(this.Face.Align.character.orientation);
+        this.Face.target.position.y = this.Face.Align.character.position.y + this.wanderOffset * Math.cos(this.Face.Align.character.orientation);
+        
+        // Calculate the target location
+        this.Face.target.position.x += this.wanderRadius * -Math.sin(targetOrientation);
+        this.Face.target.position.y += this.wanderRadius * Math.cos(targetOrientation);
+        
+        // Deleagate the face
+        var steering = this.Face.getSteering();
+        
+        // Now set the linear acceleration to be at full acceleration in the direction of the orientation
+        steering.linear.x = this.maxAccel * -Math.sin(this.Face.Align.character.orientation);
+        steering.linear.y = this.maxAccel * Math.cos(this.Face.Align.character.orientation);
+        
+        return steering;
     }
 }

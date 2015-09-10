@@ -60,6 +60,19 @@ var init = function() {
     evade.flee.maxAccel = 5.0;
     steeringMovements[1] = evade;
     
+    // Set Wander
+    var wander = new Wander();
+    wander.Face.Align.character = kinematic;
+    wander.Face.Align.maxAngularAcceleration = Math.PI / 15.0;
+    wander.Face.Align.maxRotation = Math.PI / 10.0;
+    wander.Face.Align.targetRadius = 0.01;
+    wander.Face.Align.slowRadius = Math.PI / 4.0;
+    wander.wanderOffset = 40;
+    wander.wanderRadius = 50;
+    wander.wanderRate = Math.PI/3;
+    wander.maxAccel = 10;
+    steeringMovements[2] = wander;
+    
     // Set face Movement
     var face = new Face();
     face.Align.character = kinematic;
@@ -100,6 +113,19 @@ var init = function() {
     evade2.flee.character = kinematic2;
     evade2.flee.maxAccel = 5.0;
     steering2Movements[1] = evade2;
+    
+    // Set Wander
+    var wander2 = new Wander();
+    wander2.Face.Align.character = kinematic2;
+    wander2.Face.Align.maxAngularAcceleration = Math.PI / 15.0;;
+    wander2.Face.Align.maxRotation = Math.PI/10.0;
+    wander2.Face.Align.targetRadius = 0.01;
+    wander2.Face.Align.slowRadius = Math.PI / 4.0;
+    wander2.wanderOffset = 25;
+    wander2.wanderRadius = 50;
+    wander2.wanderRate = Math.PI/3;
+    wander2.maxAccel = 10.0;
+    steering2Movements[2] = wander2;
     
     // Set face Movement
     var face2 = new Face();
@@ -157,11 +183,11 @@ var update = function(modifier) {
         selectedFaceMovement = 1;
     }
     
-    /*if(69 in keysDown) { // e
+    if(69 in keysDown) { // e
         selectedMovement = 2;
     }
     
-    if(82 in keysDown) { // r
+    /*if(82 in keysDown) { // r
         selectedMovement = 3;
     }
     
@@ -185,11 +211,11 @@ var update = function(modifier) {
         selectedFace2Movement = 1;
     }
     
-    /*if(68 in keysDown) { // d
+    if(68 in keysDown) { // d
         selectedMovement2 = 2;
     }
     
-    if(70 in keysDown) { // f
+    /*if(70 in keysDown) { // f
         selectedMovement2 = 3;
     }
     
@@ -200,13 +226,17 @@ var update = function(modifier) {
     // steering algorithm
     var steeringOutput = steeringMovements[selectedMovement].getSteering();
     kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
-    steeringOutput = faceMovements[selectedFaceMovement].getSteering();
-    kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    if(selectedMovement < 2) {
+        steeringOutput = faceMovements[selectedFaceMovement].getSteering();
+        kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    }
     
     steeringOutput = steering2Movements[selectedMovement2].getSteering();
     kinematic2.UpdateSteering(steeringOutput, maxSpeed2, modifier);
-    steeringOutput = face2Movements[selectedFace2Movement].getSteering();
-    kinematic2.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    if(selectedMovement2 < 2) {
+        steeringOutput = face2Movements[selectedFace2Movement].getSteering();
+        kinematic2.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    }
     
     // clip the position
     clipPosition(kinematic);
@@ -293,7 +323,7 @@ var render = function() {
             ctx.fillText("Evade (From Flee)", 32, 32);
             break;
         case 2:
-            ctx.fillText("Steering Arrive", 32, 32);
+            ctx.fillText("Wander", 32, 32);
             break;
         case 3:
             ctx.fillText("Steering Align", 32, 32);
@@ -304,19 +334,22 @@ var render = function() {
     }
     ctx.fillText("'q' for Pursue", 32, 48);
     ctx.fillText("'w' for Evade", 32, 64);
-    ctx.fillText("'e' for Arrive", 32, 80);
+    ctx.fillText("'e' for Wander", 32, 80);
     ctx.fillText("'r' for Align", 32, 96);
     ctx.fillText("'t' for Velocity Match", 32, 112);
-    switch(selectedFaceMovement) {
-        case 0:
-            ctx.fillText("Face", 32, 128);
-            break;
-        case 1:
-            ctx.fillText("Look Where You're Going", 32, 128);
-            break;
+    
+    if(selectedMovement < 2) {
+        switch(selectedFaceMovement) {
+            case 0:
+                ctx.fillText("Face", 32, 128);
+                break;
+            case 1:
+                ctx.fillText("Look Where You're Going", 32, 128);
+                break;
+        }
+        ctx.fillText("'o' for Face", 32, 144);
+        ctx.fillText("'p' for Look Where You're Going", 32, 160);
     }
-    ctx.fillText("'o' for Face", 32, 144);
-    ctx.fillText("'p' for Look Where You're Going", 32, 160);
     
     ctx.fillStyle = "rgb(0,255,0)";
     switch(selectedMovement2) {
@@ -327,7 +360,7 @@ var render = function() {
             ctx.fillText("Evade (From Flee)", 600, 32);
             break;
         case 2:
-            ctx.fillText("Steering Arrive", 600, 32);
+            ctx.fillText("Wander", 600, 32);
             break;
         case 3:
             ctx.fillText("Steering Align", 600, 32);
@@ -339,21 +372,22 @@ var render = function() {
     
     ctx.fillText("'a' for Pursue", 600, 48);
     ctx.fillText("'s' for Evade", 600, 64);
-    ctx.fillText("'d' for Arrive", 600, 80);
+    ctx.fillText("'d' for Wander", 600, 80);
     ctx.fillText("'f' for Align", 600, 96);
     ctx.fillText("'g' for Velocity Matching", 600, 112);
     
-    switch(selectedFace2Movement) {
-        case 0:
-            ctx.fillText("Face", 600, 128);
-            break;
-        case 1:
-            ctx.fillText("Look Where You're Going", 600, 128);
-            break;
+    if(selectedMovement2 < 2) {
+        switch(selectedFace2Movement) {
+            case 0:
+                ctx.fillText("Face", 600, 128);
+                break;
+            case 1:
+                ctx.fillText("Look Where You're Going", 600, 128);
+                break;
+        }
+        ctx.fillText("'o' for Face", 600, 144);
+        ctx.fillText("'p' for Look Where You're Going", 600, 160);
     }
-    ctx.fillText("'o' for Face", 600, 144);
-    ctx.fillText("'p' for Look Where You're Going", 600, 160);
-    
 }
 
 // Cross-browser support for requestAnimationFrame
