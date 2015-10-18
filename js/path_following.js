@@ -25,7 +25,7 @@ function LineSegmentPath() {
     // Basic Structure of Line Segment Path / Collection of Points 
     this.points = Array();
     
-    this.changeRadius = 5; // Radius to change to next point
+    this.changeRadius = 10; // Radius to change to next point
     
     this.getParam = function(position, lastParam) {
         
@@ -57,6 +57,12 @@ function LineSegmentPath() {
         }
         
         // TODO : Handle reverse direction
+        /*if(distance > lastParam.distance) { // menjauh
+            var prevPoint = this.points[(lastParam.current-1) % this.points.length];
+            var prevDistance = (new Vector(position.x - prevPoint.x, position.y - prevPoint.y)).length();
+            nextParam.current = (lastParam.current -1) % this.points.length();
+            nextParam.distance = prevDistance;
+        }*/
         
         return nextParam;
     };
@@ -74,9 +80,9 @@ function LineSegmentPath() {
 // Path Following Algorithm
 //
 
-function FollowPath() {
+function KinematicFollowPath() {
     // Hold the algorithm for seek
-    this.Seek = new SteeringSeek();
+    this.Seek = new KinematicSeek();
     
     // hold tha path to follow
     this.path = 0;
