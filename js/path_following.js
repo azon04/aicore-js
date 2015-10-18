@@ -8,7 +8,10 @@ function SimpleLineSegmentPathParam() {
     
     // This function must be implemented in every path param
     this.addOffset = function(offset) {
-        this.distance = this.distance - offset;
+        var returnParam = new SimpleLineSegmentPathParam();
+        returnParam.distance = this.distance - offset;
+        returnParam.current = this.current;
+        return returnParam;
     };
 }
 
@@ -24,9 +27,10 @@ function LineSegmentPath() {
     
     this.changeRadius = 5; // Radius to change to next point
     
-    this.getparam = function(position, lastParam) {
+    this.getParam = function(position, lastParam) {
+        
         // LastParam
-        var nextParam = SimpleLineSegmentPathParam();
+        var nextParam = new SimpleLineSegmentPathParam();
         
         if(lastParam.current == -1) {
             nextParam.current = 0;
@@ -43,7 +47,7 @@ function LineSegmentPath() {
         
         // If distance less than radius, posibly it pass the point
         if(distance < this.changeRadius) {
-            nextParam.current = (lastParam.current + 1) % this.points.size();
+            nextParam.current = (lastParam.current + 1) % this.points.length;
             point = this.points[nextParam.current];
             nextParam.distance = new Vector(position.x - point.x, position.y - point.y).length();
         } else {
@@ -71,12 +75,33 @@ function LineSegmentPath() {
 //
 
 function FollowPath() {
+    // Hold the algorithm for seek
+    this.Seek = new SteeringSeek();
+    
     // hold tha path to follow
     this.path = 0;
     
     // Hold the distance along the path to generate the
     // taget Can be negative if the character is to move
     // along the reverse direction
+    this.pathOffset = 0;
     
+    // Holds the current param of the path
+    this.currentParam = 0;
     
+    this.getSteering = function() {
+        // 1. Calculate the target to delegate to face
+        
+        // Find the current position on the path
+        this.currentParam = this.path.getParam(this.Seek.character.position, this.currentParam);
+        
+        // Offset it
+        targetParam = this.currentParam.addOffset(this.pathOffset);
+        
+        // Get the target position
+        this.Seek.target = new Kinematic();
+        this.Seek.target.position = path.getPosition(targetParam);
+        
+        return this.Seek.getSteering();
+    };
 }
