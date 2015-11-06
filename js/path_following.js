@@ -111,3 +111,35 @@ function KinematicFollowPath() {
         return this.Seek.getSteering();
     };
 }
+
+function FollowPath() {
+    // Hold the algorithm for seek
+    this.Seek = new SteeringSeek();
+    
+    // hold tha path to follow
+    this.path = 0;
+    
+    // Hold the distance along the path to generate the
+    // taget Can be negative if the character is to move
+    // along the reverse direction
+    this.pathOffset = 0;
+    
+    // Holds the current param of the path
+    this.currentParam = 0;
+    
+    this.getSteering = function() {
+        // 1. Calculate the target to delegate to face
+        
+        // Find the current position on the path
+        this.currentParam = this.path.getParam(this.Seek.character.position, this.currentParam);
+        
+        // Offset it
+        targetParam = this.currentParam.addOffset(this.pathOffset);
+        
+        // Get the target position
+        this.Seek.target = new Kinematic();
+        this.Seek.target.position = path.getPosition(targetParam);
+        
+        return this.Seek.getSteering();
+    };
+}
