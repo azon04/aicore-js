@@ -7,10 +7,11 @@ canvas.height = 600;
 var kinematic = {};
 
 // Path
-var path = new LineSegmentPath();
+var path = new LinePath();
 
 // Path Following Algorithm
 var followPath = new FollowPath();
+var lookWhereYouGoing = new LookWhereYoureGoing();
 
 // Handle keyboard controls
 var keysDown = {};
@@ -29,19 +30,27 @@ var init = function() {
     kinematic = new Kinematic();
     
     // Path Setup
+    path.changeRadius = 30;
     path.points.push(new Vector(100, 350));
-    path.points.push(new Vector(200, 150));
-    path.points.push(new Vector(300, 350));
-    path.points.push(new Vector(400, 150));
+    path.points.push(new Vector(300, 150));
     path.points.push(new Vector(500, 350));
+    path.points.push(new Vector(600, 150));
+    path.points.push(new Vector(600, 500));
+    path.construct();
     
     // Path following algorithm setting
     followPath.Seek.character = kinematic;
-    followPath.Seek.maxAccel = 20.0;
-    followPath.Seek.maxSpeed = 50.0;
+    followPath.Seek.maxAccel = 5.0;
+    followPath.Seek.maxSpeed = 10.0;
     followPath.path = path;
-    followPath.pathOffset = -10;
+    followPath.pathOffset = 10;
     followPath.currentParam = new SimpleLineSegmentPathParam();
+    
+    lookWhereYouGoing.Align.character = kinematic;
+    lookWhereYouGoing.Align.maxAngularAcceleration = Math.PI / 15.0;
+    lookWhereYouGoing.Align.maxRotation = Math.PI / 10.0;
+    lookWhereYouGoing.Align.targetRadius = 0.01;
+    lookWhereYouGoing.Align.slowRadius = Math.PI / 4.0;
 }
 
 function clipPosition(obj) {
@@ -64,9 +73,12 @@ var update = function(modifier) {
     
     // path following algorithm
     var steeringOutput = followPath.getSteering();
+    var faceSteeringOutput = lookWhereYouGoing.getSteering();
+    
     //kinematic.UpdateSteering(steeringOutput, 64 ,modifier);
-    kinematic.UpdateSteering(steeringOutput, 32, modifier);
-
+    kinematic.UpdateSteering(steeringOutput, 10, modifier);
+    kinematic.UpdateSteering(faceSteeringOutput, 10, modifier);
+    
     // clip the position
     clipPosition(kinematic);
     

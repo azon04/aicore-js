@@ -35,6 +35,10 @@ function Vector(x=0, y=0)
     };
 }
 
+function DotProduct(vector1, vector2) {
+    return vector1.x * vector2.x + vector1.y * vector2.y;
+}
+
 // Static. See page 43
 function Static()
 {
