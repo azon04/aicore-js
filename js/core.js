@@ -1,4 +1,4 @@
-function Vector(x, y)
+function Vector(x=0, y=0)
 {
     this.x = x;
     this.y = y;
@@ -33,6 +33,10 @@ function Vector(x, y)
         this.x /= length;
         this.y /= length;
     };
+}
+
+function DotProduct(vector1, vector2) {
+    return vector1.x * vector2.x + vector1.y * vector2.y;
 }
 
 // Static. See page 43
