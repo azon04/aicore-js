@@ -2,20 +2,6 @@
 // Path Param
 //
 
-// Simple path param
-function SimpleLineSegmentPathParam() {
-    this.current = -1; // Current Line Segment Point position
-    this.distance = -1; // distance to current Line Segment Point
-    
-    // This function must be implemented in every path param
-    this.addOffset = function(offset) {
-        var returnParam = new SimpleLineSegmentPathParam();
-        returnParam.distance = this.distance - offset;
-        returnParam.current = this.current;
-        return returnParam;
-    };
-}
-
 // More complex path param
 // path param is only consist distance of the path
 function PathParam() {
@@ -23,7 +9,7 @@ function PathParam() {
     
     this.addOffset = function(offset) {
         var returnParam = new PathParam();
-        returnParam.distance += offset;
+        returnParam.distance = this.distance + offset;
         return returnParam;
     };
 }
@@ -31,62 +17,6 @@ function PathParam() {
 //
 // Path
 //
-
-// Line Segment Path With SImple Line Segment Param
-function SimpleLineSegmentPath() {
-    
-    // Basic Structure of Line Segment Path / Collection of Points 
-    this.points = Array();
-    
-    this.changeRadius = 10; // Radius to change to next point
-    
-    this.getParam = function(position, lastParam) {
-        
-        // LastParam
-        var nextParam = new SimpleLineSegmentPathParam();
-        
-        if(lastParam.current == -1) {
-            nextParam.current = 0;
-            nextParam.distance = new Vector(position.x - this.points[0].x, position.y - this.points[0].y).length();
-            return nextParam;
-        }
-        
-        // Current point
-        var point = this.points[lastParam.current];
-        
-        // calculate distance between
-        var distanceVector =  new Vector(position.x - point.x, position.y - point.y);
-        var distance = distanceVector.length();
-        
-        // If distance less than radius, posibly it pass the point
-        if(distance < this.changeRadius) {
-            nextParam.current = (lastParam.current + 1) % this.points.length;
-            point = this.points[nextParam.current];
-            nextParam.distance = new Vector(position.x - point.x, position.y - point.y).length();
-        } else {
-            // update distance only
-            nextParam.current = lastParam.current;
-            nextParam.distance = distance;
-        }
-        
-        // TODO : Handle reverse direction
-        /*if(distance > lastParam.distance) { // menjauh
-            var prevPoint = this.points[(lastParam.current-1) % this.points.length];
-            var prevDistance = (new Vector(position.x - prevPoint.x, position.y - prevPoint.y)).length();
-            nextParam.current = (lastParam.current -1) % this.points.length();
-            nextParam.distance = prevDistance;
-        }*/
-        
-        return nextParam;
-    };
-    
-    this.getPosition = function(param) {
-        if(param.current == -1) {
-            return this.points[0];
-        }
-        return this.points[param.current];
-    };
-}
 
 // LineSegment Path using Path Param (Distance only)
 function LinePath() {
@@ -103,17 +33,14 @@ function LinePath() {
         var nextParam = new PathParam();
         
         // Search nearest point from last param
-        var distanceOfPath = 0;
-        var index = 0;
-        while(distanceOfPath < lastParam.distance && index < this.points.length) {
+        var distanceOfPath = this.distanceForPoints[1];
+        var index = 1;
+        while(distanceOfPath-this.changeRadius < lastParam.distance && index < this.points.length) {
             index++;
             distanceOfPath += this.distanceForPoints[index];
         }
         
-        if(index == 0) {
-            nextParam.distance = 0;
-            return nextParam;
-        } else if(index == this.points.length) {
+        if(index == this.points.length) {
             nextParam.distance = this.distanceForPoints[this.points.length-1];
             return nextParam;
         }
@@ -125,7 +52,7 @@ function LinePath() {
         
         vector1.normalize();
         var distanceFromPoint1 = DotProduct(vector1, vector2);
-        nextParam = this.distanceForPoints[index-1] + distanceFromPoint1;
+        nextParam.distance = distanceOfPath - this.distanceForPoints[index] + distanceFromPoint1;
         
         return nextParam;
     };
@@ -133,17 +60,14 @@ function LinePath() {
     this.getPosition = function(param) {
         
         // Search nearest point from last param
-        var distanceOfPath = 0;
-        var index = 0;
+        var distanceOfPath = this.distanceForPoints[1];
+        var index = 1;
         while(distanceOfPath < param.distance && index < this.points.length) {
             index++;
             distanceOfPath += this.distanceForPoints[index];
         }
         
-        if(index == 0) {
-            // PR
-            return this.points[0];
-        } else if (index == this.points.length) {
+        if (index == this.points.length) {
             return this.points[this.points.length-1];
         }
         
@@ -152,7 +76,6 @@ function LinePath() {
         var point2 = this.points[index];
         var vector1 = new Vector(point2.x - point1.x, point2.y - point1.y);
         vector1.normalize();
-        
         var returnedPoint = new Vector( point1.x + diff * vector1.x,
                                        point1.y + diff * vector1.y);
         
@@ -230,16 +153,13 @@ function FollowPath() {
         
         // Find the current position on the path
         this.currentParam = this.path.getParam(this.Seek.character.position, this.currentParam);
-        console.log(this.currentParam);
         
         // Offset it
         targetParam = this.currentParam.addOffset(this.pathOffset);
-        //console.log(targetParam);
         
         // Get the target position
         this.Seek.target = new Kinematic();
         this.Seek.target.position = path.getPosition(targetParam);
-        //console.log(this.Seek.target.position);
         
         return this.Seek.getSteering();
     };

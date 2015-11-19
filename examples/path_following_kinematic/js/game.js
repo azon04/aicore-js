@@ -7,7 +7,7 @@ canvas.height = 600;
 var kinematic = {};
 
 // Path
-var path = new LineSegmentPath();
+var path = new LinePath();
 
 // Path Following Algorithm
 var followPath = new KinematicFollowPath();
@@ -27,20 +27,23 @@ addEventListener("keyup", function(e) {
 // Init
 var init = function() {
     kinematic = new Kinematic();
+    kinematic.position.x = 90;
+    kinematic.position.y = 300;
     
     // Path Setup
     path.points.push(new Vector(100, 350));
-    path.points.push(new Vector(200, 150));
-    path.points.push(new Vector(300, 350));
-    path.points.push(new Vector(400, 150));
+    path.points.push(new Vector(300, 150));
     path.points.push(new Vector(500, 350));
+    path.points.push(new Vector(600, 150));
+    path.points.push(new Vector(600, 500));
+    path.construct();
     
     // Path following algorithm setting
     followPath.Seek.character = kinematic;
-    followPath.Seek.maxAccel = 20.0;
+    followPath.Seek.maxAccel = 30.0;
     followPath.Seek.maxSpeed = 50.0;
     followPath.path = path;
-    followPath.pathOffset = -10;
+    followPath.pathOffset = 20;
     followPath.currentParam = new SimpleLineSegmentPathParam();
 }
 

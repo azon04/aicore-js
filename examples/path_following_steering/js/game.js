@@ -28,9 +28,10 @@ addEventListener("keyup", function(e) {
 // Init
 var init = function() {
     kinematic = new Kinematic();
+    kinematic.position.x = 90;
+    kinematic.position.y = 300;
     
     // Path Setup
-    path.changeRadius = 30;
     path.points.push(new Vector(100, 350));
     path.points.push(new Vector(300, 150));
     path.points.push(new Vector(500, 350));
