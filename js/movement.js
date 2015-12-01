@@ -137,7 +137,7 @@ function SteeringSeek() {
         steeringOutput.linear.x *= this.maxAccel;
         steeringOutput.linear.y *= this.maxAccel;
         
-        //this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        // this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
         
         // Output steering
         steeringOutput.angular = 0;
@@ -164,7 +164,7 @@ function SteeringFlee() {
         steeringOutput.linear.x *= this.maxAccel;
         steeringOutput.linear.y *= this.maxAccel;
         
-        //this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
+        // this.character.orientation = getNewOrientation(this.character.orientation, steeringOutput.linear);
         
         // Output steering
         steeringOutput.angular = 0;
@@ -418,6 +418,8 @@ function Evade() {
 function Face() {
     this.Align = new SteeringAlign();
     
+    this.Align.target = new Kinematic(); // setup imaginery target
+    
     //
     this.target = {};
     
@@ -434,7 +436,6 @@ function Face() {
             return new SteeringOutput();
         
         // Put target together
-        this.Align.target = new Kinematic();
         this.Align.target.orientation = Math.atan2(-direction.x, direction.y);
         
         return this.Align.getSteering();
@@ -443,6 +444,7 @@ function Face() {
 
 function LookWhereYoureGoing() {
     this.Align = new SteeringAlign();
+    this.Align.target = new Kinematic(); // setup imaginery target
     
     this.getSteering = function() {
         // Calculate the target to dlegate
@@ -452,7 +454,6 @@ function LookWhereYoureGoing() {
             return new SteeringOutput();
         
         // Otherwise set the target based on the velocity
-        this.Align.target = new Kinematic();
         this.Align.target.orientation = Math.atan2(-this.Align.character.velocity.x, this.Align.character.velocity.y);
         
         return this.Align.getSteering();
@@ -461,6 +462,7 @@ function LookWhereYoureGoing() {
 
 function Wander() {
     this.Face = new Face();
+    this.Face.target = new Kinematic();
     
     // Holds the radius and the forwared offset of the wander circle
     this.wanderOffset = 0.0;
@@ -486,7 +488,6 @@ function Wander() {
         
         
         // Calculate the circle of the wander circle
-        this.Face.target = new Kinematic();
         this.Face.target.position.x = this.Face.Align.character.position.x + this.wanderOffset * -Math.sin(this.Face.Align.character.orientation);
         this.Face.target.position.y = this.Face.Align.character.position.y + this.wanderOffset * Math.cos(this.Face.Align.character.orientation);
         

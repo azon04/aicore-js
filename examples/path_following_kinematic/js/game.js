@@ -44,7 +44,7 @@ var init = function() {
     followPath.Seek.maxSpeed = 50.0;
     followPath.path = path;
     followPath.pathOffset = 20;
-    followPath.currentParam = new SimpleLineSegmentPathParam();
+    followPath.currentParam = new PathParam();
 }
 
 function clipPosition(obj) {

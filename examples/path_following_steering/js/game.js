@@ -45,7 +45,7 @@ var init = function() {
     followPath.Seek.maxSpeed = 10.0;
     followPath.path = path;
     followPath.pathOffset = 10;
-    followPath.currentParam = new SimpleLineSegmentPathParam();
+    followPath.currentParam = new PathParam();
     
     lookWhereYouGoing.Align.character = kinematic;
     lookWhereYouGoing.Align.maxAngularAcceleration = Math.PI / 15.0;

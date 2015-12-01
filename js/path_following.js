@@ -104,6 +104,7 @@ function LinePath() {
 function KinematicFollowPath() {
     // Hold the algorithm for seek
     this.Seek = new KinematicSeek();
+    this.Seek.target = new Kinematic();
     
     // hold tha path to follow
     this.path = 0;
@@ -126,7 +127,6 @@ function KinematicFollowPath() {
         targetParam = this.currentParam.addOffset(this.pathOffset);
         
         // Get the target position
-        this.Seek.target = new Kinematic();
         this.Seek.target.position = path.getPosition(targetParam);
         
         return this.Seek.getSteering();
@@ -136,6 +136,7 @@ function KinematicFollowPath() {
 function FollowPath() {
     // Hold the algorithm for seek
     this.Seek = new SteeringSeek();
+    this.Seek.target = new Kinematic();
     
     // hold tha path to follow
     this.path = 0;
@@ -158,7 +159,6 @@ function FollowPath() {
         targetParam = this.currentParam.addOffset(this.pathOffset);
         
         // Get the target position
-        this.Seek.target = new Kinematic();
         this.Seek.target.position = path.getPosition(targetParam);
         
         return this.Seek.getSteering();
