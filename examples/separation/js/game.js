@@ -31,16 +31,16 @@ addEventListener("keyup", function(e) {
 // Init
 var init = function() {
     
-    kinematics.clear();
-    WanderingMovements.clear();
+    kinematics = [];
+    WanderingMovements = [];
     // Set Wander
-    for(var index = 0; index < 3; index++) {
+    for(var index = 0; index < 10; index++) {
         kinematics.push(new Kinematic());
-        kinematics[index].position.x = Math.random() * Canvas.width;
-        kinematics[index].position.y = Math.random() * Canvas.height;
+        kinematics[index].position.x = (canvas.width/2 - canvas.width/6) + Math.random() * canvas.width/3;
+        kinematics[index].position.y = (canvas.height/2 - canvas.height/6) + Math.random() * canvas.height/3;
         
         var WanderMovement = new Wander();
-        WanderMovement.Face.Align.character = kinematic[index];
+        WanderMovement.Face.Align.character = kinematics[index];
         WanderMovement.Face.Align.maxAngularAcceleration = Math.PI / 15.0;
         WanderMovement.Face.Align.maxRotation = Math.PI / 10.0;
         WanderMovement.Face.Align.targetRadius = 0.01;
@@ -49,12 +49,14 @@ var init = function() {
         WanderMovement.wanderRadius = 50;
         WanderMovement.wanderRate = Math.PI/3;
         WanderMovement.maxAccel = 10;
-        
         WanderingMovements.push(WanderMovement);
     }
     
     // Set separation
-    
+    respulsorKinematic.position.x = canvas.width / 2;
+    respulsorKinematic.position.y = canvas.height / 2;
+    SeparationMovement.character = respulsorKinematic;
+    SeparationMovement.targets = kinematics;
 }
 
 function clipPosition(obj) {
@@ -132,24 +134,19 @@ var update = function(modifier) {
         selectedMovement2 = 4;
     }*/
 
-    // steering algorithm
-    var steeringOutput = steeringMovements[selectedMovement].getSteering();
-    kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
-    if(selectedMovement < 2) {
-        steeringOutput = faceMovements[selectedFaceMovement].getSteering();
-        kinematic.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
+    // wander kinematics
+    for(var index =0; index < kinematics.length; index++) {
+        var steeringOutput = WanderingMovements[index].getSteering();
+        kinematics[index].UpdateSteering(steeringOutput, 32 ,modifier);
+        clipPosition(kinematics[index]);
     }
     
-    steeringOutput = steering2Movements[selectedMovement2].getSteering();
-    kinematic2.UpdateSteering(steeringOutput, maxSpeed2, modifier);
-    if(selectedMovement2 < 2) {
-        steeringOutput = face2Movements[selectedFace2Movement].getSteering();
-        kinematic2.UpdateSteering(steeringOutput, maxSpeed1 ,modifier);
-    }
+    // Separation
+    var SeparationSteeringOutput = SeparationMovement.getSteering();
+    respulsorKinematic.UpdateSteering(SeparationSteeringOutput, 32, modifier);
     
     // clip the position
-    clipPosition(kinematic);
-    clipPosition(kinematic2);
+    clipPosition(respulsorKinematic);
     
 };
 
@@ -209,94 +206,33 @@ var drawKinematic = function(ctx, color, position, orientation) {
     
 }
 
+var drawRadius = function(ctx, color, position, radius) {
+    ctx.save();
+
+    ctx.translate(position.x + 8, position.y + 8);
+    
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#0000ff";
+    ctx.beginPath();
+    ctx.arc(0,0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
 // Draw Everything
 var render = function() {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0,0, canvas.width, canvas.height);
     
-    drawKinematic(ctx, "#ff0000", kinematic.position, kinematic.orientation);
+    for(var index =0; index < kinematics.length; index++)
+        drawKinematic(ctx, "#ff0000", kinematics[index].position, kinematics[index].orientation);
     
-    drawKinematic(ctx, "#00ff00", kinematic2.position, kinematic2.orientation);
+    drawRadius(ctx, "rgba(0, 0, 255, 0.25)", respulsorKinematic.position, SeparationMovement.threshold);
+    drawKinematic(ctx, "#00ff00", respulsorKinematic.position, respulsorKinematic.orientation);
     
-    // Score
-    ctx.fillStyle = "rgb(255,0,0)";
-    ctx.font = "12px Helvetica";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
     
-    switch(selectedMovement) {
-        case 0:
-            ctx.fillText("Pursue (From Seek)", 32, 32);
-            break;
-        case 1:
-            ctx.fillText("Evade (From Flee)", 32, 32);
-            break;
-        case 2:
-            ctx.fillText("Wander", 32, 32);
-            break;
-        case 3:
-            ctx.fillText("Steering Align", 32, 32);
-            break;
-        case 4:
-            ctx.fillText("Velocity Matching", 32, 32);
-            break;
-    }
-    ctx.fillText("'q' for Pursue", 32, 48);
-    ctx.fillText("'w' for Evade", 32, 64);
-    ctx.fillText("'e' for Wander", 32, 80);
-    ctx.fillText("'r' for Align", 32, 96);
-    ctx.fillText("'t' for Velocity Match", 32, 112);
-    
-    if(selectedMovement < 2) {
-        switch(selectedFaceMovement) {
-            case 0:
-                ctx.fillText("Face", 32, 128);
-                break;
-            case 1:
-                ctx.fillText("Look Where You're Going", 32, 128);
-                break;
-        }
-        ctx.fillText("'o' for Face", 32, 144);
-        ctx.fillText("'p' for Look Where You're Going", 32, 160);
-    }
-    
-    ctx.fillStyle = "rgb(0,255,0)";
-    switch(selectedMovement2) {
-        case 0:
-            ctx.fillText("Pursue (From Seek)", 600, 32);
-            break;
-        case 1:
-            ctx.fillText("Evade (From Flee)", 600, 32);
-            break;
-        case 2:
-            ctx.fillText("Wander", 600, 32);
-            break;
-        case 3:
-            ctx.fillText("Steering Align", 600, 32);
-            break;
-        case 4:
-            ctx.fillText("Velocity Matching", 600, 32);
-            break;
-    }
-    
-    ctx.fillText("'a' for Pursue", 600, 48);
-    ctx.fillText("'s' for Evade", 600, 64);
-    ctx.fillText("'d' for Wander", 600, 80);
-    ctx.fillText("'f' for Align", 600, 96);
-    ctx.fillText("'g' for Velocity Matching", 600, 112);
-    
-    if(selectedMovement2 < 2) {
-        switch(selectedFace2Movement) {
-            case 0:
-                ctx.fillText("Face", 600, 128);
-                break;
-            case 1:
-                ctx.fillText("Look Where You're Going", 600, 128);
-                break;
-        }
-        ctx.fillText("'o' for Face", 600, 144);
-        ctx.fillText("'p' for Look Where You're Going", 600, 160);
-    }
 }
 
 // Cross-browser support for requestAnimationFrame
