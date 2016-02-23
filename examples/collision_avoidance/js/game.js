@@ -34,10 +34,10 @@ var init = function() {
     kinematics = [];
     WanderingMovements = [];
     // Set Wander
-    for(var index = 0; index < 10; index++) {
+    for(var index = 0; index < 2; index++) {
         kinematics.push(new Kinematic());
-        kinematics[index].position.x = (canvas.width/2 - canvas.width/6) + Math.random() * canvas.width/3;
-        kinematics[index].position.y = (canvas.height/2 - canvas.height/6) + Math.random() * canvas.height/3;
+        kinematics[index].position.x = 0;
+        kinematics[index].position.y = 0;
         
         var WanderMovement = new Wander();
         WanderMovement.Face.Align.character = kinematics[index];
@@ -57,6 +57,7 @@ var init = function() {
     respulsorKinematic.position.y = canvas.height / 2;
     CollAvoidMovement.character = respulsorKinematic;
     CollAvoidMovement.targets = kinematics;
+    CollAvoidMovement.maxAccel = 32;
 }
 
 function clipPosition(obj) {
@@ -141,9 +142,16 @@ var update = function(modifier) {
         clipPosition(kinematics[index]);
     }
     
-    // Separation
+    // Collision Avoidance
+    var moveSteeringOutput = new SteeringOutput();
+    moveSteeringOutput.linear.x = 32;
+    moveSteeringOutput.linear.y = 32;
+    respulsorKinematic.UpdateSteering(moveSteeringOutput, 32, modifier);
+    
     var CollAvoidnSteeringOutput = CollAvoidMovement.getSteering();
     respulsorKinematic.UpdateSteering(CollAvoidnSteeringOutput, 32, modifier);
+    
+    respulsorKinematic.orientation = getNewOrientation(respulsorKinematic.orientation, respulsorKinematic.velocity);
     
     // clip the position
     clipPosition(respulsorKinematic);
@@ -229,7 +237,7 @@ var render = function() {
     for(var index =0; index < kinematics.length; index++)
         drawKinematic(ctx, "#ff0000", kinematics[index].position, kinematics[index].orientation);
     
-    drawRadius(ctx, "rgba(0, 0, 255, 0.25)", respulsorKinematic.position, SeparationMovement.threshold);
+    drawRadius(ctx, "rgba(0, 0, 255, 0.25)", respulsorKinematic.position, CollAvoidMovement.threshold);
     drawKinematic(ctx, "#00ff00", respulsorKinematic.position, respulsorKinematic.orientation);
     
     

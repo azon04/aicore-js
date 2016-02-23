@@ -4,7 +4,7 @@ function CollisionAvoidance() {
     this.character = {};
     
     // Holds the maximun acceleration
-    this.maxAccel = 0;
+    this.maxAccel = 10;
     
     // Holds a list of potential targets
     this.targets = new Array();
@@ -19,11 +19,11 @@ function CollisionAvoidance() {
         // 1. Find the target that's closest to collision
         
         // Store the first collision time
-        var shortestTime = Infinity;
+        var shortestTime = 9999999;
         
         // Store the target that colludes them. and other data
         // that we will need and can avoid recalculating
-        var firstTarget = {};
+        var firstTarget = 0;
         var firstMinSeparation = 0;
         var firstDistance = 0;
         var firstRelativePos = new Vector(0,0);
@@ -47,11 +47,12 @@ function CollisionAvoidance() {
             // Check if it is going to be a collision at all
             var distance = relativePos.length();
             var minSeparation = distance - relativeSpeed * shortestTime;
-            if(!(minSeparation > 2 * this.radius))
-                return steering;
+            if(minSeparation > 2 * this.radius)
+                continue;
                 
             if(timeToCollision > 0 && 
                timeToCollision < shortestTime) {
+                
                 // Store the time, target and other data
                 firstTarget = target;
                 shortestTime = timeToCollision;
@@ -60,12 +61,14 @@ function CollisionAvoidance() {
                 firstRelativePos = relativePos;
                 firstRelativeVel = relativeVel;
             }
+            
+           
         }
         
         // 2. Calculate the steering
         
         // if we have no target then exit
-        if(firstTarget == {})
+        if(firstTarget == 0)
             return steering;
         
         var relativePos = new Vector(0,0);
@@ -76,7 +79,7 @@ function CollisionAvoidance() {
         {
             relativePos = new Vector(
                 firstTarget.position.x - this.character.position.x,
-                firstTarget.position. - this.character.position.y
+                firstTarget.position.y - this.character.position.y
             );
         } else {
             relativePos = new Vector(
@@ -88,6 +91,7 @@ function CollisionAvoidance() {
         relativePos.normalize();
         steering.linear.x = relativePos.x * this.maxAccel;
         steering.linear.y = relativePos.y * this.maxAccel;
+        
         
         return steering;
             
